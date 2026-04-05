@@ -1,0 +1,48 @@
+---
+- name: Place postgresql configuration
+  ansible.builtin.template:
+    src: postgresql.conf.j2
+    dest: /var/lib/pgsql/16/data/postgresql.conf
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  notify: Restart postgresql service
+
+- name: Create databases
+  community.postgresql.postgresql_db:
+    name: "{{ database.name }}"
+    state: "{{ database.state }}"
+  become: true
+  become_user: "{{ postgresql_user }}"
+  loop: "{{ postgresql_databases }}"
+  loop_control:
+    loop_var: database
+  when: postgresql_databases|length > 0
+
+- name: Add users/roles
+  community.postgresql.postgresql_user:
+    db: "{{ user.database }}"
+    user: "{{ user.name }}"
+    password: "{{ user.password | default(omit) }}"
+    state: "{{ user.state | default('present') }}"
+  become: true
+  become_user: "{{ postgresql_user }}"
+  no_log: true
+  loop: "{{ postgresql_users }}"
+  loop_control:
+    loop_var: user
+  when: postgresql_users | length > 0
+
+- name: Grant privileges
+  community.postgresql.postgresql_privs:
+    db: "{{ privilege.database }}"
+    privs: "{{ privilege.privs }}"
+    type: "{{ privilege.type }}"
+    role: "{{ privilege.role }}"
+    state: "{{ privilege.state }}"
+  become: true
+  become_user: "{{ postgresql_user }}"
+  loop: "{{ postgresql_privileges }}"
+  loop_control:
+    loop_var: privilege
+  when: postgresql_privileges | length > 0

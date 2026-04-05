@@ -1,0 +1,14 @@
+---
+- name: Install postgresql
+  ansible.builtin.package:
+    name: "{{ postgresql_package }}"
+    state: present
+
+- name: Get stats file PG_VERSION
+  ansible.builtin.stat:
+    path: /var/lib/pgsql/16/data/PG_VERSION
+  register: pg_version_file_stat
+
+- name: Init database
+  ansible.builtin.command: /usr/pgsql-16/bin/postgresql-16-setup initdb
+  when: pg_version_file_stat.stat.isreg == false

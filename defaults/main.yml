@@ -1,0 +1,9 @@
+---
+postgresql_package: postgresql-server
+postgresql_user: postgres
+# comma separated list of listen addresses
+postgresql_listen_addresses: "127.0.0.1"
+postgresql_service_name: postgresql
+postgresql_databases: []
+postgresql_users: []
+postgresql_privileges: []
